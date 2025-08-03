@@ -8,8 +8,8 @@ import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import org.json.JSONArray
-import org.json.JSONObject
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class LeaderboardActivity : AppCompatActivity() {
     private lateinit var highScoresTable: android.widget.TableLayout
@@ -17,6 +17,7 @@ class LeaderboardActivity : AppCompatActivity() {
     private lateinit var yourScoreValue: TextView
     private lateinit var leaderboardBackButton: Button
     private lateinit var prefs: SharedPreferences
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,14 +39,40 @@ class LeaderboardActivity : AppCompatActivity() {
         leaderboardBackButton.setTextColor(android.graphics.Color.WHITE)
         highScoresTable.setBackgroundColor(android.graphics.Color.parseColor("#08252d"))
 
-        val allScores = getAllScoresWithUsernames()
-        val best10 = allScores.take(10)
-        val userBest = prefs.getInt("user_best", -1)
-        val username = prefs.getString("username", "User") ?: "User"
+        // Fetch top 10 global scores from Firestore
+        fetchTopScoresFromFirestore(neonYellow)
 
-        // Populate the table with scores
+        leaderboardBackButton.setOnClickListener {
+            finish()
+        }
+    }
+
+
+    private fun fetchTopScoresFromFirestore(neonYellow: Int) {
+        firestore.collection("scores")
+            .orderBy("score", Query.Direction.ASCENDING)
+            .limit(10)
+            .get()
+            .addOnSuccessListener { result ->
+                val topScores = result.documents.mapNotNull { doc ->
+                    val username = doc.getString("username") ?: "User"
+                    val score = doc.getLong("score")?.toInt() ?: return@mapNotNull null
+                    ScoreEntry(username, score)
+                }
+                displayScores(topScores, neonYellow)
+            }
+            .addOnFailureListener {
+                // Optionally show error or fallback to local
+                yourScoreLabel.text = "Could not load global scores."
+                yourScoreValue.text = "-"
+                yourScoreLabel.visibility = TextView.VISIBLE
+                yourScoreValue.visibility = TextView.VISIBLE
+            }
+    }
+
+    private fun displayScores(scores: List<ScoreEntry>, neonYellow: Int) {
         highScoresTable.removeAllViews()
-        for ((i, entry) in best10.withIndex()) {
+        for ((i, entry) in scores.withIndex()) {
             val row = android.widget.TableRow(this)
             val rankView = android.widget.TextView(this)
             val nameView = android.widget.TextView(this)
@@ -74,10 +101,8 @@ class LeaderboardActivity : AppCompatActivity() {
             rankView.layoutParams = lpRank
             nameView.layoutParams = lpName
             scoreView.layoutParams = lpScore
-            // Alternate row background color for clarity
             val bgColor = if (i % 2 == 0) android.graphics.Color.parseColor("#0e3440") else android.graphics.Color.parseColor("#08252d")
             row.setBackgroundColor(bgColor)
-            // Add a bottom divider
             val divider = android.view.View(this)
             divider.layoutParams = android.widget.TableRow.LayoutParams(android.widget.TableRow.LayoutParams.MATCH_PARENT, 2)
             divider.setBackgroundColor(android.graphics.Color.parseColor("#222222"))
@@ -88,14 +113,10 @@ class LeaderboardActivity : AppCompatActivity() {
             highScoresTable.addView(divider)
         }
 
-        // Show user's best at the bottom if not in top 10
-        val userInTop10 = best10.any { it.username == username && it.score == userBest }
-        if (userBest != -1 && !userInTop10) {
-            yourScoreLabel.text = "Your Best (not in top 10):"
-            yourScoreValue.text = "$username: $userBest ms"
-            yourScoreLabel.visibility = TextView.VISIBLE
-            yourScoreValue.visibility = TextView.VISIBLE
-        } else if (userBest != -1) {
+        // Show user's best (local) at the bottom
+        val userBest = prefs.getInt("user_best", -1)
+        val username = prefs.getString("username", "User") ?: "User"
+        if (userBest != -1) {
             yourScoreLabel.text = "Your Best:"
             yourScoreValue.text = "$username: $userBest ms"
             yourScoreLabel.visibility = TextView.VISIBLE
@@ -106,24 +127,5 @@ class LeaderboardActivity : AppCompatActivity() {
             yourScoreLabel.visibility = TextView.VISIBLE
             yourScoreValue.visibility = TextView.VISIBLE
         }
-
-        leaderboardBackButton.setOnClickListener {
-            finish()
-        }
-    }
-
-    private fun getAllScoresWithUsernames(): List<ScoreEntry> {
-        val allJson = prefs.getString("all_scores_json", "[]")
-        val arr = JSONArray(allJson)
-        val entries = mutableListOf<ScoreEntry>()
-        for (i in 0 until arr.length()) {
-            val obj = arr.getJSONObject(i)
-            val username = obj.optString("username", "User")
-            val score = obj.optInt("score", -1)
-            if (score != -1) {
-                entries.add(ScoreEntry(username, score))
-            }
-        }
-        return entries.sortedBy { it.score }
     }
 }

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "812008123555",
+    "firebase_url": "https://reaction-tap-377ef-default-rtdb.firebaseio.com",
+    "project_id": "reaction-tap-377ef",
+    "storage_bucket": "reaction-tap-377ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:812008123555:android:c1af6218ab35cc9723e316",
+        "android_client_info": {
+          "package_name": "com.example.reactiontap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlzgU8hLF6yZ-NmhrV9cIsNLpaCMYilsQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

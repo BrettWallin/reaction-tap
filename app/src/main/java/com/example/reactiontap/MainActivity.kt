@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlin.random.Random
 import org.json.JSONArray
 import org.json.JSONObject
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var canTap = false
     private var startTime: Long = 0L
     private var delayRunnable: Runnable? = null
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -168,6 +170,18 @@ class MainActivity : AppCompatActivity() {
         if (userBest == -1 || score < userBest) {
             prefs.edit().putInt("user_best", score).apply()
         }
+
+        // --- FIRESTORE UPLOAD ---
+        // Each score is a document in the "scores" collection
+        val scoreData = hashMapOf(
+            "username" to username,
+            "score" to score,
+            "timestamp" to System.currentTimeMillis()
+        )
+        firestore.collection("scores")
+            .add(scoreData)
+            .addOnSuccessListener { /* Optionally log or show success */ }
+            .addOnFailureListener { /* Optionally log or show error */ }
     }
 
     private fun showMenuUI() {
