@@ -2,35 +2,45 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#CCCCCC"
+    android:background="#08252d"
     android:padding="24dp">
 
-    <TextView
-        android:id="@+id/usernamePrompt"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/usernameContentLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enter your username:"
-        android:textSize="20sp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="60dp"/>
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true">
 
-    <EditText
-        android:id="@+id/usernameEditText"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:hint="Username"
-        android:textSize="18sp"
-        android:layout_below="@id/usernamePrompt"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"/>
+        <TextView
+            android:id="@+id/usernamePrompt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enter your username:"
+            android:textSize="20sp"
+            android:textColor="#fec515"
+            android:layout_marginTop="16dp"/>
 
-    <Button
-        android:id="@+id/usernameContinueButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Continue"
-        android:layout_below="@id/usernameEditText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="24dp"/>
+        <EditText
+            android:id="@+id/usernameEditText"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:textSize="18sp"
+            android:textColor="#fec515"
+            android:textCursorDrawable="@drawable/gold_cursor"
+            android:backgroundTint="#fec515"
+            android:layout_marginTop="16dp"/>
+
+        <Button
+            android:id="@+id/usernameContinueButton"
+            style="@style/StartButton"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:text="Continue"
+            android:layout_marginTop="24dp"/>
+
+    </LinearLayout>
 
 </RelativeLayout>
