@@ -169,19 +169,20 @@ class MainActivity : AppCompatActivity() {
         val userBest = prefs.getInt("user_best", -1)
         if (userBest == -1 || score < userBest) {
             prefs.edit().putInt("user_best", score).apply()
-        }
 
-        // --- FIRESTORE UPLOAD ---
-        // Each score is a document in the "scores" collection
-        val scoreData = hashMapOf(
-            "username" to username,
-            "score" to score,
-            "timestamp" to System.currentTimeMillis()
-        )
-        firestore.collection("scores")
-            .add(scoreData)
-            .addOnSuccessListener { /* Optionally log or show success */ }
-            .addOnFailureListener { /* Optionally log or show error */ }
+            // --- FIRESTORE UPLOAD ---
+            // Use username as document ID so each user only has one score
+            val scoreData = hashMapOf(
+                "username" to username,
+                "score" to score,
+                "timestamp" to System.currentTimeMillis()
+            )
+            firestore.collection("scores")
+                .document(username)
+                .set(scoreData)
+                .addOnSuccessListener { /* Optionally log or show success */ }
+                .addOnFailureListener { /* Optionally log or show error */ }
+        }
     }
 
     private fun showMenuUI() {
