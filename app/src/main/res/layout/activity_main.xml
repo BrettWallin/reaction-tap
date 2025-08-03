@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#CCCCCC"
+    android:padding="24dp">
+
+    <!-- Main Menu -->
+    <LinearLayout
+        android:id="@+id/mainMenuLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true">
+
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/logo"
+            android:layout_gravity="center"
+            android:contentDescription="App Logo"
+            android:layout_marginBottom="24dp" />
+
+        <Button
+            android:id="@+id/startButton"
+            style="@style/StartButton"
+            android:text="Start"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/removeAdsButton"
+            style="@style/RemoveAdsButton"
+            android:text="Remove Ads"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/viewHighScoresButton"
+            style="@style/HighScoresButton"
+            android:text="View High Scores" />
+    </LinearLayout>
+
+    <!-- Game UI (hidden by default) -->
+
+    <LinearLayout
+        android:id="@+id/gameEndLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/endLogoImage"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/logo"
+            android:visibility="gone"
+            android:contentDescription="App Logo End Screen" />
+
+        <Button
+            android:id="@+id/reactionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wait for green..."
+            android:background="#888888"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/playAgainButton"
+            style="@style/StartButton"
+            android:text="Play Again"
+            android:visibility="gone"
+            android:layout_marginTop="24dp"/>
+
+        <Button
+            android:id="@+id/mainMenuButton"
+            style="@style/HighScoresButton"
+            android:text="Main Menu"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+</RelativeLayout>

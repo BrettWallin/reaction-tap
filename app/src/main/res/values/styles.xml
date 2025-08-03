@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="StartButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#f7461c</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:layout_width">300dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <style name="RemoveAdsButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#fec515</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:layout_width">300dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <style name="HighScoresButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#15a9aa</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:layout_width">300dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <style name="Theme.ReactionTap" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Retro Neon Palette -->
+        <item name="colorPrimary">#FF2D95</item> <!-- Hot Pink for main button -->
+        <item name="colorPrimaryVariant">#3D0066</item> <!-- Deep Purple -->
+        <item name="colorOnPrimary">#FFFFFF</item> <!-- Bold White Text -->
+        <item name="colorSecondary">#00FFF7</item> <!-- Neon Blue -->
+        <item name="colorSecondaryVariant">#3D0066</item>
+        <item name="colorOnSecondary">#000000</item>
+        <item name="android:windowBackground">#08252d</item> <!-- Retro dark blue background -->
+        <item name="android:textColorPrimary">#00FFF7</item> <!-- Neon Blue text -->
+        <item name="android:fontFamily">monospace</item> <!-- Arcade-style fallback font -->
+        <item name="buttonStyle">@style/NeonButton</item>
+    </style>
+
+    <style name="NeonButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#FF2D95</item> <!-- Hot Pink -->
+        <item name="android:textColor">#FFFFFF</item> <!-- Bold White Text -->
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:elevation">8dp</item>
+        <item name="android:shadowColor">#FF2D95</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">0</item>
+        <item name="android:shadowRadius">8</item>
+        <item name="rippleColor">#FF2D95</item>
+    </style>
+</resources>
