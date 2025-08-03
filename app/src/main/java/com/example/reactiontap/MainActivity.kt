@@ -95,6 +95,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Reaction button also handles taps during the game
+        reactionButton.setOnClickListener {
+            if (reactionButton.visibility == View.VISIBLE) {
+                if (gameStarted && canTap) {
+                    val reactionTime = System.currentTimeMillis() - startTime
+                    showResult("Reaction Time: ${reactionTime} ms")
+                } else if (gameStarted && !canTap) {
+                    showResult("Too soon! Try again.")
+                }
+            }
+        }
+
         // Hide game UI and show menu on launch
         showMenuUI()
     }
