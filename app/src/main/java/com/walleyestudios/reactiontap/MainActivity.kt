@@ -1,5 +1,4 @@
-
-package com.example.reactiontap
+package com.walleyestudios.reactiontap
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
@@ -34,6 +33,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 
+
 class MainActivity : AppCompatActivity() {
     // Billing
     private lateinit var billingClient: BillingClient
@@ -63,16 +63,8 @@ class MainActivity : AppCompatActivity() {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Billing setup
-        setupBillingClient()
         super.onCreate(savedInstanceState)
         prefs = getSharedPreferences("reactiontap_scores", Context.MODE_PRIVATE)
-
-        // Initialize Google Mobile Ads SDK
-        MobileAds.initialize(this) { }
-
-        // Load first interstitial ad
-        loadInterstitialAd()
 
         // If username not set, go to UsernameActivity
         val username = prefs.getString("username", null)
@@ -91,6 +83,19 @@ class MainActivity : AppCompatActivity() {
         mainMenuLayout = findViewById(R.id.mainMenuLayout)
         startButton = findViewById(R.id.startButton)
         removeAdsButton = findViewById(R.id.removeAdsButton)
+        viewHighScoresButton = findViewById(R.id.viewHighScoresButton)
+        mainMenuButton = findViewById(R.id.mainMenuButton)
+        endLogoImage = findViewById(R.id.endLogoImage)
+
+        // Billing setup (must be after findViewById)
+        setupBillingClient()
+
+        // Initialize Google Mobile Ads SDK
+        MobileAds.initialize(this) { }
+
+        // Load first interstitial ad
+        loadInterstitialAd()
+
         // Disable Remove Ads button until product details are loaded or already purchased
         if (prefs.getBoolean(REMOVE_ADS_PREF, false)) {
             removeAdsButton.isEnabled = false
@@ -118,9 +123,6 @@ class MainActivity : AppCompatActivity() {
                 showMessage("Store not ready. Try again in a moment.")
             }
         }
-        viewHighScoresButton = findViewById(R.id.viewHighScoresButton)
-        mainMenuButton = findViewById(R.id.mainMenuButton)
-        endLogoImage = findViewById(R.id.endLogoImage)
 
         // Banner Ad setup (use XML ad size only)
         val adView = findViewById<AdView>(R.id.adView)

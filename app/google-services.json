@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:812008123555:android:c1af6218ab35cc9723e316",
+        "mobilesdk_app_id": "1:812008123555:android:759784df52e8289e23e316",
         "android_client_info": {
-          "package_name": "com.example.reactiontap"
+          "package_name": "com.walleyestudios.reactiontap"
         }
       },
       "oauth_client": [],

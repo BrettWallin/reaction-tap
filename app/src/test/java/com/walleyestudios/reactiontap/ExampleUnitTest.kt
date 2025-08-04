@@ -1,7 +1,6 @@
-package com.example.reactiontap
+package com.walleyestudios.reactiontap
 
 import org.junit.Test
-
 import org.junit.Assert.*
 
 /**

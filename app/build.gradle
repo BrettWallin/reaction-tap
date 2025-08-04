@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    namespace 'com.example.reactiontap'
+    namespace 'com.walleyestudios.reactiontap'
     compileSdk 34
 
 
     defaultConfig {
-        applicationId "com.example.reactiontap"
+        applicationId "com.walleyestudios.reactiontap"
         minSdk 23
         targetSdk 34
         versionCode 1
