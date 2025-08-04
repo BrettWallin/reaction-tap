@@ -1,4 +1,14 @@
+
 package com.example.reactiontap
+
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.android.billingclient.api.ProductDetails
 
 import android.graphics.Color
 import android.content.Intent
@@ -16,8 +26,19 @@ import kotlin.random.Random
 import org.json.JSONArray
 import org.json.JSONObject
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
 
 class MainActivity : AppCompatActivity() {
+    // Billing
+    private lateinit var billingClient: BillingClient
+    private var removeAdsProductDetails: ProductDetails? = null
+    private val REMOVE_ADS_PREF = "remove_ads_purchased"
 
     private lateinit var rootLayout: RelativeLayout
     private lateinit var reactionButton: Button
@@ -29,6 +50,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewHighScoresButton: Button
     private lateinit var endLogoImage: android.widget.ImageView
 
+    // Interstitial Ad
+    private var interstitialAd: InterstitialAd? = null
+    private var gamesPlayed = 0
+
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var prefs: SharedPreferences
     private var gameStarted = false
@@ -38,8 +63,16 @@ class MainActivity : AppCompatActivity() {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Billing setup
+        setupBillingClient()
         super.onCreate(savedInstanceState)
         prefs = getSharedPreferences("reactiontap_scores", Context.MODE_PRIVATE)
+
+        // Initialize Google Mobile Ads SDK
+        MobileAds.initialize(this) { }
+
+        // Load first interstitial ad
+        loadInterstitialAd()
 
         // If username not set, go to UsernameActivity
         val username = prefs.getString("username", null)
@@ -58,9 +91,46 @@ class MainActivity : AppCompatActivity() {
         mainMenuLayout = findViewById(R.id.mainMenuLayout)
         startButton = findViewById(R.id.startButton)
         removeAdsButton = findViewById(R.id.removeAdsButton)
+        // Disable Remove Ads button until product details are loaded or already purchased
+        if (prefs.getBoolean(REMOVE_ADS_PREF, false)) {
+            removeAdsButton.isEnabled = false
+            removeAdsButton.text = "Purchased"
+        } else {
+            removeAdsButton.isEnabled = false
+        }
+        // Remove Ads button launches purchase flow
+        removeAdsButton.setOnClickListener {
+            if (prefs.getBoolean(REMOVE_ADS_PREF, false)) {
+                // Already purchased
+                showMessage("Ads already removed!")
+            } else if (removeAdsProductDetails != null) {
+                val billingFlowParams = BillingFlowParams.newBuilder()
+                    .setProductDetailsParamsList(
+                        listOf(
+                            BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(removeAdsProductDetails!!)
+                                .build()
+                        )
+                    )
+                    .build()
+                billingClient.launchBillingFlow(this, billingFlowParams)
+            } else {
+                showMessage("Store not ready. Try again in a moment.")
+            }
+        }
         viewHighScoresButton = findViewById(R.id.viewHighScoresButton)
         mainMenuButton = findViewById(R.id.mainMenuButton)
         endLogoImage = findViewById(R.id.endLogoImage)
+
+        // Banner Ad setup (use XML ad size only)
+        val adView = findViewById<AdView>(R.id.adView)
+        if (!prefs.getBoolean(REMOVE_ADS_PREF, false)) {
+            val adRequest = AdRequest.Builder().build()
+            adView.loadAd(adRequest)
+            adView.visibility = View.VISIBLE
+        } else {
+            adView.visibility = View.GONE
+        }
 
         // View High Scores launches leaderboard
         viewHighScoresButton.setOnClickListener {
@@ -143,6 +213,14 @@ class MainActivity : AppCompatActivity() {
         mainMenuButton.visibility = View.VISIBLE
         endLogoImage.visibility = View.VISIBLE
 
+        // Interstitial ad logic: show after every 3 games (if not purchased)
+        if (!prefs.getBoolean(REMOVE_ADS_PREF, false)) {
+            gamesPlayed++
+            if (gamesPlayed % 3 == 0) {
+                showInterstitialAd()
+            }
+        }
+
         // Save score if it's a valid reaction time
         if (message.startsWith("Reaction Time:")) {
             val regex = Regex("Reaction Time: (\\d+) ms")
@@ -195,6 +273,13 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(delayRunnable ?: Runnable { })
         gameStarted = false
         canTap = false
+        // Hide banner ad if purchased
+        val adView = findViewById<AdView>(R.id.adView)
+        if (prefs.getBoolean(REMOVE_ADS_PREF, false)) {
+            adView.visibility = View.GONE
+        } else {
+            adView.visibility = View.VISIBLE
+        }
     }
 
     private fun showGameUI() {
@@ -206,8 +291,148 @@ class MainActivity : AppCompatActivity() {
         rootLayout.setBackgroundColor(Color.parseColor("#08252d"))
     }
 
+    // --- Billing Setup ---
+    private fun setupBillingClient() {
+        billingClient = BillingClient.newBuilder(this)
+            .setListener(purchasesUpdatedListener)
+            .enablePendingPurchases()
+            .build()
+        billingClient.startConnection(object : BillingClientStateListener {
+            override fun onBillingServiceDisconnected() {
+                // Try to restart connection if needed
+            }
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    queryRemoveAdsProduct()
+                    checkRemoveAdsPurchase()
+                }
+            }
+        })
+    }
+
+    private fun queryRemoveAdsProduct() {
+        val params = QueryProductDetailsParams.newBuilder()
+            .setProductList(
+                listOf(
+                    QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId("remove_ads") // Set this to your actual product ID in Play Console
+                        .setProductType(BillingClient.ProductType.INAPP)
+                        .build()
+                )
+            )
+            .build()
+        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+            runOnUiThread {
+                if (prefs.getBoolean(REMOVE_ADS_PREF, false)) {
+                    removeAdsButton.isEnabled = false
+                    removeAdsButton.text = "Purchased"
+                } else if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
+                    removeAdsProductDetails = productDetailsList[0]
+                    removeAdsButton.isEnabled = true
+                } else {
+                    // Enable button to allow retry if loading fails
+                    removeAdsButton.isEnabled = true
+                }
+            }
+        }
+    }
+
+    private val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
+        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+            for (purchase in purchases) {
+                if (purchase.products.contains("remove_ads")) {
+                    handleRemoveAdsPurchase(purchase)
+                }
+            }
+        }
+    }
+
+    private fun handleRemoveAdsPurchase(purchase: Purchase) {
+        // Acknowledge purchase if needed
+        if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged) {
+            billingClient.acknowledgePurchase(
+                com.android.billingclient.api.AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(purchase.purchaseToken)
+                    .build()
+            ) { ackResult ->
+                if (ackResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    prefs.edit().putBoolean(REMOVE_ADS_PREF, true).apply()
+                    hideAdsForever()
+                    runOnUiThread {
+                        removeAdsButton.isEnabled = false
+                        removeAdsButton.text = "Purchased"
+                    }
+                }
+            }
+        } else if (purchase.isAcknowledged) {
+            prefs.edit().putBoolean(REMOVE_ADS_PREF, true).apply()
+            hideAdsForever()
+            runOnUiThread {
+                removeAdsButton.isEnabled = false
+                removeAdsButton.text = "Purchased"
+            }
+        }
+    }
+
+    private fun checkRemoveAdsPurchase() {
+        billingClient.queryPurchasesAsync(BillingClient.SkuType.INAPP) { billingResult, purchases ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                for (purchase in purchases) {
+                    if (purchase.products.contains("remove_ads")) {
+                        handleRemoveAdsPurchase(purchase)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun hideAdsForever() {
+        val adView = findViewById<AdView>(R.id.adView)
+        adView.visibility = View.GONE
+        showMessage("Ads removed! Thank you for your support.")
+    }
+
+    private fun showMessage(msg: String) {
+        android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
+        interstitialAd = null
+    }
+
+    // --- Interstitial Ad Methods ---
+    private fun loadInterstitialAd() {
+        val adRequest = AdRequest.Builder().build()
+        InterstitialAd.load(
+            this,
+            "ca-app-pub-3940256099942544/1033173712", // Test interstitial ad unit ID
+            adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    interstitialAd = ad
+                    interstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                        override fun onAdDismissedFullScreenContent() {
+                            loadInterstitialAd() // Preload next ad
+                        }
+                        override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                            loadInterstitialAd()
+                        }
+                    }
+                }
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    interstitialAd = null
+                }
+            }
+        )
+    }
+
+    private fun showInterstitialAd() {
+        if (interstitialAd != null) {
+            interstitialAd?.show(this)
+        } else {
+            loadInterstitialAd()
+        }
     }
 }

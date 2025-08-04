@@ -6,45 +6,51 @@
     android:padding="24dp"
     android:background="#CCCCCC">
 
-    <TextView
-        android:id="@+id/leaderboardTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Leaderboard"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"/>
-
-    <ListView
-        android:id="@+id/highScoresListView"
+    <LinearLayout
+        android:id="@+id/leaderboardContentLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/leaderboardTitle"
-        android:layout_marginTop="24dp"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp"/>
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true">
 
-    <TextView
-        android:id="@+id/yourScoreLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Your Best:"
-        android:textSize="18sp"
-        android:layout_below="@id/highScoresListView"
-        android:layout_marginTop="32dp"
-        android:layout_centerHorizontal="true"/>
+        <TextView
+            android:id="@+id/leaderboardTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Leaderboard"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"/>
 
-    <TextView
-        android:id="@+id/yourScoreValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="-"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_below="@id/yourScoreLabel"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp"/>
+        <ListView
+            android:id="@+id/highScoresListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="1dp"
+            android:layout_marginTop="24dp"/>
+
+        <TextView
+            android:id="@+id/yourScoreLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Best:"
+            android:textSize="18sp"
+            android:layout_gravity="center"
+            android:layout_marginTop="32dp"/>
+
+        <TextView
+            android:id="@+id/yourScoreValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
 
     <Button
         android:id="@+id/leaderboardBackButton"
