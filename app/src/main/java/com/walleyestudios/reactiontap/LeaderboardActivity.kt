@@ -39,12 +39,13 @@ class LeaderboardActivity : AppCompatActivity() {
         leaderboardBackButton.setTextColor(android.graphics.Color.WHITE)
         highScoresTable.setBackgroundColor(android.graphics.Color.parseColor("#08252d"))
 
-        // Show user's best score
+        // Show user's best score and username
         val userBest = prefs.getInt("user_best", -1)
+        val username = prefs.getString("username", "User") ?: "User"
         if (userBest != -1) {
-            yourScoreValue.text = userBest.toString() + " ms"
+            yourScoreValue.text = "$username: ${userBest} ms"
         } else {
-            yourScoreValue.text = "-"
+            yourScoreValue.text = "$username: -"
         }
 
         // Back button closes leaderboard

@@ -407,9 +407,10 @@ class MainActivity : AppCompatActivity() {
     // --- Interstitial Ad Methods ---
     private fun loadInterstitialAd() {
         val adRequest = AdRequest.Builder().build()
+        // Use Google's test interstitial ad unit ID
         InterstitialAd.load(
             this,
-            "ca-app-pub-4723028926463332/2262743746", // Real interstitial ad unit ID
+            "ca-app-pub-3940256099942544/1033173712", // Test interstitial ad unit ID
             adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {

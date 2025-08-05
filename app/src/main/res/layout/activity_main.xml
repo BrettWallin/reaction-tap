@@ -91,6 +91,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        ads:adUnitId="ca-app-pub-4723028926463332/8093670833"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111"
         ads:adSize="BANNER" />
 </RelativeLayout>
